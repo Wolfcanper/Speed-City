@@ -1,0 +1,77 @@
+import pygame
+import random
+
+# Configurações do jogo
+largura_tela = 800
+altura_tela = 600
+cor_fundo = (255, 255, 255)
+cor_carro = (0, 0, 255)
+cor_obstaculo = (255, 0, 0)
+velocidade_carro = 5
+largura_carro = 60
+altura_carro = 80
+largura_obstaculo = 50
+altura_obstaculo = 50
+
+pygame.init()
+tela = pygame.display.set_mode((largura_tela, altura_tela))
+pygame.display.set_caption("Top Gear - Jogo de Corrida")
+clock = pygame.time.Clock()
+
+def criar_obstaculo():
+    x = random.randrange(0, largura_tela - largura_obstaculo)
+    y = -altura_obstaculo
+    return {'x': x, 'y': y}
+
+def desenhar_carro(x, y):
+    pygame.draw.rect(tela, cor_carro, (x, y, largura_carro, altura_carro))
+
+def desenhar_obstaculo(x, y):
+    pygame.draw.rect(tela, cor_obstaculo, (x, y, largura_obstaculo, altura_obstaculo))
+
+def verificar_colisao(x_carro, y_carro, x_obstaculo, y_obstaculo):
+    if y_carro < y_obstaculo + altura_obstaculo and y_carro + altura_carro > y_obstaculo:
+        if x_carro < x_obstaculo + largura_obstaculo and x_carro + largura_carro > x_obstaculo:
+            return True
+    return False
+
+def jogo():
+    x_carro = largura_tela // 2 - largura_carro // 2
+    y_carro = altura_tela - altura_carro - 20
+
+    obstaculos = []
+    contador_pontos = 0
+    game_over = False
+
+    while not game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        tela.fill(cor_fundo)
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] and x_carro > 0:
+            x_carro -= velocidade_carro
+        if keys[pygame.K_RIGHT] and x_carro < largura_tela - largura_carro:
+            x_carro += velocidade_carro
+
+        if len(obstaculos) < 10:
+            if random.randrange(0, 100) < 3:
+                obstaculos.append(criar_obstaculo())
+
+        for obstaculo in obstaculos:
+            obstaculo['y'] += velocidade_carro
+            desenhar_obstaculo(obstaculo['x'], obstaculo['y'])
+
+            if verificar_colisao(x_carro, y_carro, obstaculo['x'], obstaculo['y']):
+                game_over = True
+
+            if obstaculo['y'] > altura_tela:
+                obstaculos.remove(obstaculo)
+                contador_pontos += 1
+
+        desenhar_carro(x_carro, y_carro)
+
+        pygame.display.update
